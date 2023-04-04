@@ -1,6 +1,5 @@
 // SPDX-License-Identifier: MIT
 
-
 pragma solidity ^0.8.2;
 
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
@@ -13,12 +12,19 @@ import "@openzeppelin/contracts/utils/Counters.sol";
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/extensions/ERC20Burnable.sol";
 
-contract FractionalNFT is ERC721, ERC721Enumerable, ERC721URIStorage, Pausable, Ownable, ERC721Burnable {
+contract FractionalNFT is
+    ERC721,
+    ERC721Enumerable,
+    ERC721URIStorage,
+    Pausable,
+    Ownable,
+    ERC721Burnable
+{
     using Counters for Counters.Counter;
 
     Counters.Counter private _tokenIdCounter;
 
-    struct _fnft{
+    struct _fnft {
         uint256 tokenId;
         address fractionalToken;
     }
@@ -44,70 +50,67 @@ contract FractionalNFT is ERC721, ERC721Enumerable, ERC721URIStorage, Pausable, 
         return "";
     }
 
-    function _beforeTokenTransfer(address from, address to, uint256 tokenId)
-        internal
-        whenNotPaused
-        override(ERC721, ERC721Enumerable)
-    {
-        super._beforeTokenTransfer(from, to, tokenId);
+    function _beforeTokenTransfer(
+        address from,
+        address to,
+        uint256 tokenId,
+        uint batch
+    ) internal override(ERC721, ERC721Enumerable) whenNotPaused {
+        super._beforeTokenTransfer(from, to, tokenId,batch);
     }
 
-    function _burn(uint256 tokenId) internal override(ERC721, ERC721URIStorage) {
+    function _burn(
+        uint256 tokenId
+    ) internal override(ERC721, ERC721URIStorage) {
         super._burn(tokenId);
     }
 
-    function tokenURI(uint256 tokenId)
-        public
-        view
-        override(ERC721, ERC721URIStorage)
-        returns (string memory)
-    {
+    function tokenURI(
+        uint256 tokenId
+    ) public view override(ERC721, ERC721URIStorage) returns (string memory) {
         return super.tokenURI(tokenId);
     }
 
-    function supportsInterface(bytes4 interfaceId)
-        public
-        view
-        override(ERC721, ERC721Enumerable)
-        returns (bool)
-    {
+    function supportsInterface(
+        bytes4 interfaceId
+    ) public view override(ERC721, ERC721Enumerable) returns (bool) {
         return super.supportsInterface(interfaceId);
     }
 
     //is the caller of this function the owner of the NFT?
-	modifier isNFTOwner(uint256 _tokenURI) {
-		require(msg.sender == ownerOf(_tokenURI));
-		_;
-	}
+    modifier isNFTOwner(uint256 _tokenURI) {
+        require(msg.sender == ownerOf(_tokenURI));
+        _;
+    }
 
     function transferFNFToken(
-        address _to, 
-        uint256 _tokenURI, 
-        uint256 _amount) 
-        onlyOwner()
-        private
-        //isNFTOwner(_tokenURI)
+        address _to,
+        uint256 _tokenURI,
+        uint256 _amount
+    ) private onlyOwner //isNFTOwner(_tokenURI)
     {
         FNFToken _fnftoken = FNFToken(FNFT[_tokenURI].fractionalToken);
         _fnftoken.transfer(_to, _amount);
-
     }
 
     function mint(
         address _to,
-        string memory tokenURI_, 
+        string memory tokenURI_,
         uint256 _totalFractionalTokens
-    ) external onlyOwner() {
+    ) external onlyOwner {
         _safeMint(_to, _tokenIdCounter.current());
         _setTokenURI(_tokenIdCounter.current(), tokenURI_);
 
         //Create a ERC20 Token Contract for this newly minted NFT
-        FNFToken _fnftoken = (new FNFToken)();                                      //initialize
-        _fnftoken.mint(msg.sender, _totalFractionalTokens * 1000000000000000000);   //now mint the fractional tokens and send it to the owner of this NFT           
-        _fnft memory fnft;                                                          //constructor
-        fnft.tokenId = _tokenIdCounter.current();                           
+        FNFToken _fnftoken = (new FNFToken)(); //initialize
+        _fnftoken.mint(
+            msg.sender,
+            _totalFractionalTokens * 1000000000000000000
+        ); //now mint the fractional tokens and send it to the owner of this NFT
+        _fnft memory fnft; //constructor
+        fnft.tokenId = _tokenIdCounter.current();
         fnft.fractionalToken = address(_fnftoken);
-        FNFT[_tokenIdCounter.current()]  = fnft;                                    //bind the fractional token address to this NFT token just minted
+        FNFT[_tokenIdCounter.current()] = fnft; //bind the fractional token address to this NFT token just minted
         _tokenIdCounter.increment();
     }
 }
