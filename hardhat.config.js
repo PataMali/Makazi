@@ -39,7 +39,49 @@ module.exports = {
       chainId: 42220,
     },
   },
-  solidity: "0.8.0",
-  solidity: "0.8.1",
-  solidity: "0.8.2",
+  contractSizer: {
+    runOnCompile: false,
+    only: ["Box"],
+  },
+
+  solidity: {
+    compilers: [
+      {
+        version: "0.8.8",
+        settings: {
+          optimizer: {
+            enabled: true,
+            runs: 200,
+          },
+        },
+      },
+      {
+        version: "0.8.2",
+        settings: {
+          optimizer: {
+            enabled: true,
+            runs: 200,
+          },
+        },
+      },
+      {
+        version: "0.8.14",
+        settings: {
+          optimizer: {
+            enabled: true,
+            runs: 200,
+          },
+        },
+      },
+      {
+        version: "0.4.24",
+        settings: {
+          optimizer: {
+            enabled: true,
+            runs: 200,
+          },
+        },
+      },
+    ],
+  },
 };
